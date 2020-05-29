@@ -1,7 +1,8 @@
 {
-    "latestVer": 1,
-	"verName": "v1.0",
+    "latestVer": 2,
+	"verName": "v1.1",
 	"updateLog": {
-		"1":"support parsing bilibili video"
+		"1":"support parsing bilibili video",
+		"2":"Fix commands bugs"
 	}
 }
