@@ -19,7 +19,7 @@ class updateDetection(threading.Thread):
     def __init__(self, server):
         threading.Thread.__init__(self)
         self.server = server
-        self.name = "Chat Bridge Update Detection Thread"
+        self.name = "Bilibili Parser Update Detection Thread"
         self.flag = True
 
     def run(self):
