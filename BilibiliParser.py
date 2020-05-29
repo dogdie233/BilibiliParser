@@ -19,7 +19,7 @@ class updateDetection(threading.Thread):
     def __init__(self, server):
         threading.Thread.__init__(self)
         self.server = server
-        self.name = "Bilibili Parser Update Detection Thread"
+        self.name = "Chat Bridge Update Detection Thread"
         self.flag = True
 
     def run(self):
@@ -77,6 +77,9 @@ def on_info(server, info):
 
 
 def on_command (server, player, args):
+    if len(args) == 0:
+        server.execute("tellraw " + player + " {\"text\":\"参数错误,请使用 " + cp + "blbl help 获取帮助\", \"color\":\"red\"}")
+        return
     if args[0].lower() == "video":
         # 检查命令参数
         if len(args) != 2:
@@ -169,6 +172,8 @@ def on_command (server, player, args):
             server.execute("tellraw " + player + " {\"text\":\"Error发生,错误信息: " + result["message"].replace("\"", "\\\"") + "\", \"color\":\"red\"}")
     elif args[0].lower() == "help":
         server.execute("tellraw " + player + " {\"text\":\"" + helpmessage.replace("\"", "\\\"") + "\"}")
+    else:
+        server.execute("tellraw " + player + " {\"text\":\"参数错误,请使用 " + cp + "blbl help 获取帮助\", \"color\":\"red\"}")
 
 
 def get_video_id(url):
