@@ -8,7 +8,7 @@ from ruamel import yaml
 from utils import rtext
 
 cp = update_message = ""
-VERSION = 1
+VERSION = 3
 helpmessage = '''\u00A79=============== \u00A7a[Bilibili Parser]\u00A79 ===============
 \u00A7b{cp}blbl video <链接/视频id>\u00A76 : 解析哔哩哔哩视频信息
 \u00A7b{cp}blbl checkupdate\u00A76 : 检查更新
