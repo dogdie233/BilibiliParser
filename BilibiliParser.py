@@ -8,48 +8,84 @@ from ruamel import yaml
 from utils import rtext
 
 cp = update_message = ""
-VERSION = 2
+VERSION = 1
 helpmessage = '''\u00A79=============== \u00A7a[Bilibili Parser]\u00A79 ===============
-\u00A7b!!blbl video <链接/视频id>\u00A76 : 解析哔哩哔哩视频信息
+\u00A7b{cp}blbl video <链接/视频id>\u00A76 : 解析哔哩哔哩视频信息
+\u00A7b{cp}blbl checkupdate\u00A76 : 检查更新
 \u00A79================================================'''.replace("\n", "\\n")
 
 
 # 更新检查线程
 class updateDetection(threading.Thread):
-    def __init__(self, server):
+    def __init__(self, server, player):
         threading.Thread.__init__(self)
         self.server = server
         self.name = "Bilibili Parser Update Detection Thread"
-        self.flag = True
+        self.player = player
 
     def run(self):
         global update_message
-        self.server.logger.info("开始检查更新")
-        # 走github获取版本号
-        result = requests.get("http://raw.githubusercontent.com/dogdie233/BilibiliParser/master/version.json")
-        if result.status_code == 200:
-            resultJson = result.json()
-            if resultJson["latestVer"] > VERSION:
-                self.server.logger.info("BilibiliParser 有新版本" + resultJson["verName"])
-                update_message = "BilibiliParser 插件有新版本 " + resultJson["verName"]
+        if self.player != "":
+            self.server.execute("tellraw " + self.player + " {\"text\":\"开始检查更新\", \"color\":\"yellow\"}")
         else:
-            # 走coding获取版本号
-            result = requests.get("http://dogdieself.coding.net/p/bilibiliparser/d/bilibiliparser/git/raw/master/version.json")
+            self.server.logger.info("开始检查更新")
+        try:
+            # 走github获取版本号
+            result = requests.get("http://raw.githubusercontent.com/dogdie233/BilibiliParser/master/version.json")
             if result.status_code == 200:
                 resultJson = result.json()
                 if resultJson["latestVer"] > VERSION:
-                    self.server.logger.info("BilibiliParser 有新版本" + resultJson["verName"])
                     update_message = "BilibiliParser 插件有新版本 " + resultJson["verName"]
+                    if self.player != "":
+                        self.server.execute("tellraw " + self.player + " {\"text\":\"" + update_message + "\", \"color\":\"green\"}")
+                    else:
+                        self.server.logger.info("BilibiliParser 有新版本" + resultJson["verName"])
+                else:
+                    if self.player != "":
+                        self.server.execute("tellraw " + self.player + " {\"text\":\"当前已是最新版本\", \"color\":\"green\"}")
+                    else:
+                        self.server.logger.info("当前已是最新版本")
             else:
-                self.server.logger.warning("无法连接到服务器，检测更新失败")
-
+                a = 1 / 0 # 抛出异常走coding获取版本号
+        except:
+            if self.player != "":
+                self.server.execute("tellraw " + self.player + " {\"text\":\"无法连接到 github 服务器，正在连接到 coding\", \"color\":\"red\"}")
+            else:
+                self.server.logger.warning("无法连接到 github 服务器，正在连接到 coding")
+            try:
+                # 走coding获取版本号
+                result = requests.get("http://dogdieself.coding.net/p/bilibiliparser/d/bilibiliparser/git/raw/master/version.json")
+                if result.status_code == 200:
+                    resultJson = result.json()
+                    if resultJson["latestVer"] > VERSION:
+                        update_message = "BilibiliParser 插件有新版本 " + resultJson["verName"]
+                        if self.player != "":
+                            self.server.execute("tellraw " + self.player + " {\"text\":\"" + update_message + "\", \"color\":\"green\"}")
+                        else:
+                            self.server.logger.info("BilibiliParser 有新版本" + resultJson["verName"])
+                    else:
+                        if self.player != "":
+                            self.server.execute("tellraw " + self.player + " {\"text\":\"当前已是最新版本\", \"color\":\"green\"}")
+                        else:
+                            self.server.logger.info("当前已是最新版本")
+                else:
+                    if self.player != "":
+                        self.server.execute("tellraw " + self.player + " {\"text\":\"无法连接到服务器，检测更新失败\", \"color\":\"red\"}")
+                    else:
+                        self.server.logger.error("无法连接到服务器，检测更新失败")
+            except:
+                if self.player != "":
+                    self.server.execute("tellraw " + self.player + " {\"text\":\"无法连接到服务器，检测更新失败\", \"color\":\"red\"}")
+                else:
+                    self.server.logger.error("无法连接到服务器，检测更新失败")
 
 def on_load(server, old_module):
-    global cp
+    global cp, helpmessage
     with open ("config.yml", "r", encoding="utf8") as f:
         cp = yaml.safe_load(f)["console_command_prefix"]
     server.add_help_message(cp + "blbl help", "查看 BilibiliParser 插件帮助")
-    updateDetectionThread = updateDetection(server)
+    helpmessage = helpmessage.replace("{cp}", cp) # 替换帮助字符中的命令前缀
+    updateDetectionThread = updateDetection(server, "")
     updateDetectionThread.setDaemon(True)
     updateDetection.start(updateDetectionThread)
 
@@ -170,6 +206,10 @@ def on_command (server, player, args):
             server.say(message)
         else:
             server.execute("tellraw " + player + " {\"text\":\"Error发生,错误信息: " + result["message"].replace("\"", "\\\"") + "\", \"color\":\"red\"}")
+    elif args[0].lower() == "checkupdate":
+        updateDetectionThread = updateDetection(server, player)
+        updateDetectionThread.setDaemon(True)
+        updateDetection.start(updateDetectionThread)
     elif args[0].lower() == "help":
         server.execute("tellraw " + player + " {\"text\":\"" + helpmessage.replace("\"", "\\\"") + "\"}")
     else:
