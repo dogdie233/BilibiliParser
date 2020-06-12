@@ -16,5 +16,6 @@
 | ------------ | ------------ |
 | !!blbl help | 查看 Bilibili Parser 命令帮助 |
 | !!blbl video <av号/bv号/视频链接> | 解析视频信息 |
+| !!blbl checkupdate | 检查更新 |
 
 ##有bug或题建议请发起issues
